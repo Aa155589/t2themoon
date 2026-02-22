@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>只有我自己 | Talk to the Moon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .lock-screen {
+            text-align: center;
+        }
+        
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            opacity: 0.7;
+        }
+        
+        .lock-message {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: #666;
+        }
+        
+        .password-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .password-input {
+            background: #111;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            padding: 0.8rem 1.2rem;
+            font-family: 'Georgia', serif;
+            font-size: 1rem;
+            width: 280px;
+            text-align: center;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #555;
+        }
+        
+        .submit-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            padding: 0.6rem 1.5rem;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        .back {
+            color: #555;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 2rem;
+            transition: color 0.3s;
+        }
+        
+        .back:hover {
+            color: #888;
+        }
+        
+        .container {
+            display: none;
+            max-width: 650px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        
+        .container.visible {
+            display: block;
+        }
+        
+        .title {
+            font-size: 1.8rem;
+            margin-bottom: 2.5rem;
+            font-weight: normal;
+            color: #ccc;
+        }
+        
+        .entry {
+            margin-bottom: 3rem;
+            line-height: 1.9;
+        }
+        
+        .entry p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+        
+        .whisper {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .error-msg {
+            color: #6a4a4a;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-icon">🌑</div>
+        <div class="lock-message">这里只有我自己</div>
+        <div class="password-form">
+            <input type="password" class="password-input" id="passwordInput" placeholder="...">
+            <button class="submit-btn" onclick="tryDecrypt()">进入</button>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+        <a href="index.html" class="back">← 回去</a>
+    </div>
+    
+    <div class="container" id="contentArea">
+        <a href="index.html" class="back">← 回去</a>
+        <h1 class="title">只有我自己</h1>
+        <div id="decryptedContent"></div>
+    </div>
+    
+    <script>
+        const E = "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";
+        
+        function xorDecrypt(encryptedBase64, key) {
+            try {
+                const encrypted = atob(encryptedBase64);
+                const keyBytes = new TextEncoder().encode(key);
+                const decryptedBytes = [];
+                for (let i = 0; i < encrypted.length; i++) {
+                    decryptedBytes.push(encrypted.charCodeAt(i) ^ keyBytes[i % keyBytes.length]);
+                }
+                return new TextDecoder().decode(new Uint8Array(decryptedBytes));
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        function tryDecrypt() {
+            const password = document.getElementById('passwordInput').value;
+            const decrypted = xorDecrypt(E, password);
+            
+            if (decrypted && decrypted.includes('<div') && decrypted.includes('</div>')) {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('contentArea').classList.add('visible');
+                document.getElementById('decryptedContent').innerHTML = decrypted;
+            } else {
+                document.getElementById('errorMsg').textContent = '不对';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                tryDecrypt();
+            }
+        });
+    </script>
+</body>
+</html>
